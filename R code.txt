@@ -1,0 +1,49 @@
+## The inverse function of the empirical distribution
+inverse <- function(Yt, U){
+   V <- rep(0, length(U))
+   Z <- sort(Yt)
+   for(i in 1 : length(U)){
+      for(j in 1 : length(Yt)){
+         if((j - 1) / length(Yt) < U[i] && U[i] <= j / length(Yt))
+            V[i] <- Z[j]
+      }
+   }
+   return(V)
+}
+
+## The empirical ROC estimator
+Rn <- function(T, Xt, Yt){
+   if (any(T < 0, 1 < T)){
+           stop("Wrong.")
+   }
+   R <- rep(0, length(T))
+   for(i in 1 : length(T)){
+        s <- T[i]
+        if(s == 0) R[i] = 0
+        else if(s == 1) R[i] = 1
+        else{
+        r <- inverse(Yt, 1 - s)
+        R[i] <- 1 - ecdf(Xt)(r)}
+        }
+   return(R)
+}
+
+## The Bernstein ROC estimator
+m <- 4
+B <- 0
+RBN <- function(T, Xt, Yt){
+   if (any(T < 0, 1 < T)){
+           stop("Wrong.")
+   }
+   R <- rep(0, length(T))
+   for(i in 1 : length(T)){
+        x <- T[i]
+        for(k in 0 : m){
+             Bk <- Rn(k/m, Xt, Yt) * choose(m, k) * (x^k) * ((1-x)^(m-k))
+             B <- B + Bk
+             }
+        R[i] <- B
+        B <- 0
+        }
+   return(R)
+}
